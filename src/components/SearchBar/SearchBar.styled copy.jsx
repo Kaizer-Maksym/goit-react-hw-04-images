@@ -1,5 +1,4 @@
 import styled from '@emotion/styled';
-import { Field } from 'formik';
 import { BsSearch } from 'react-icons/bs';
 
 export const Search = styled.header`
@@ -10,17 +9,13 @@ export const Search = styled.header`
   background-color: #185f9e;
 `;
 
-export const InputField = styled(Field)`
+export const InputField = styled.input`
   width: 400px;
   height: 25px;
   border: none;
   padding: 5px;
 
   outline: none;
-  :focus,
-  :hover {
-    outline: none;
-  }
 `;
 
 export const Button = styled.button`

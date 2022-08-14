@@ -1,87 +1,79 @@
-import React, { Component } from 'react';
-import SearchField from './SearchBar/SearchBar';
+import React, { useEffect, useReducer } from 'react';
+// -------components
+import { ScrollTop } from './Scroll/ScrollTop';
+import SearchField from './SearchBar/SearchBar copy';
 import GalleryBox from './ImageGallery/ImgGallery';
 import GalleryItem from './ImageGalleryItem/GalleryItem';
 import Modal from './Modal/Modal';
 import Loader from './Loader/Loader';
 import LoadBtn from './Button/LoadBtn';
+// --------services
+import reducer from '../services/reduser';
 import * as API from '../services/api';
 
-class App extends Component {
-  state = {
-    searchKey: '',
-    largImgUrl: null,
-    tags: null,
+const App = () => {
+  const [data, dispatch] = useReducer(reducer, {
     pictures: [],
+    query: '',
     page: 1,
     loading: false,
-  };
+    largImg: null,
+    tags: null,
+  });
 
-  submitHadle = values => {
-    this.setState({ searchKey: values, pictures: [], page: 1 });
-  };
+  const { pictures, query, page, loading, largImg, tags } = data;
 
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  onImgClick = (largImgUrl, tags) => {
-    this.setState({ largImgUrl: largImgUrl, tags: tags });
-  };
-
-  handleClickOnLayout = e => {
-    if (e.currentTarget === e.target) {
-      this.setState({ largImgUrl: null });
-    }
-  };
-
-  componentDidUpdate(_, prevState) {
-    const { searchKey, page } = this.state;
-    const value = searchKey.search;
-    if (prevState.searchKey !== searchKey || prevState.page !== page) {
+  useEffect(() => {
+    if (!query ?? !page) {
+      return;
+    } else {
       try {
-        this.setState({ loading: true });
-        API.getImg(value, page).then(pictures =>
-          this.setState(prevState => ({
-            pictures: [...prevState.pictures, pictures],
-            loading: false,
-          }))
-        );
+        dispatch({ type: 'loading' });
+        API.getImg(query, page).then(pictures => {
+          dispatch({ type: 'fetch', payload: pictures });
+          dispatch({ type: 'loading' });
+        });
       } catch (error) {
         console.log(error);
       }
     }
-  }
+  }, [query, page]);
 
-  render() {
-    const { pictures, largImgUrl, loading, tags } = this.state;
+  const submitHadle = query => {
+    dispatch({ type: 'query', payload: query });
+    dispatch({ type: 'reset', payload: [] });
+    dispatch({ type: 'page', payload: 1 });
+  };
 
-    return (
-      <>
-        <SearchField onSubmit={this.submitHadle} />
+  const onImgClick = (largImg, tags) => {
+    dispatch({ type: 'largImg', payload: largImg });
+    dispatch({ type: 'tags', payload: tags });
+  };
 
-        {pictures && (
-          <GalleryBox>
-            <GalleryItem pictures={pictures} onClick={this.onImgClick} />
-          </GalleryBox>
-        )}
+  const handleClickOnLayout = e => {
+    if (e.currentTarget === e.target) {
+      dispatch({ type: 'largImg', payload: null });
+    }
+  };
 
-        {pictures.length > 0 && !loading ? (
-          <LoadBtn onClick={this.loadMore} />
-        ) : null}
-
-        {largImgUrl && (
-          <Modal
-            largImgUrl={largImgUrl}
-            tags={tags}
-            onClick={this.handleClickOnLayout}
-          />
-        )}
-
-        {loading && <Loader />}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <SearchField onSubmit={submitHadle} />
+      {pictures && (
+        <GalleryBox>
+          <GalleryItem pictures={pictures} onClick={onImgClick} />
+        </GalleryBox>
+      )}
+      {pictures.length > 0 && !loading ? (
+        <LoadBtn onClick={() => dispatch({ type: 'increment', payload: 1 })} />
+      ) : null}
+      {largImg && (
+        <Modal largImg={largImg} tags={tags} onClick={handleClickOnLayout} />
+      )}
+      {loading && <Loader />}
+      <ScrollTop query={query} />
+    </>
+  );
+};
 
 export default App;

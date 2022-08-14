@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Layout } from './Modal.styled';
 
-const Modal = ({ largImgUrl, tags, onClick }) => {
+const Modal = ({ largImg, tags, onClick }) => {
   return (
     <Layout onClick={onClick}>
-      <img src={largImgUrl} alt={tags} width="1000" height="800" />
+      <img src={largImg} alt={tags} width="800" height="600" />
     </Layout>
   );
 };
@@ -13,7 +13,7 @@ const Modal = ({ largImgUrl, tags, onClick }) => {
 export default Modal;
 
 Modal.prototype = {
-  largImgUrl: PropTypes.string,
+  largImg: PropTypes.string,
   tags: PropTypes.string,
   onClick: PropTypes.func,
 };
